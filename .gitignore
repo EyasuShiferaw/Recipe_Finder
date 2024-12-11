@@ -1,0 +1,82 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.whl
+
+# C extensions
+*.so
+
+# Documentation
+docs/_build/
+htmlcov/
+_static/
+
+# Test / coverage reports
+.coverage
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / Editor specific
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Environment files
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IPython history
+.ipython/profile_default/history.sqlite
+
+# SQLite database files
+*.sqlite
+*.sqlite3
+
+# Local configuration files
+local_settings.py
+.local.env
+
+# MyPy cache
+.mypy_cache/
+
+# PyInstaller files
+*.spec
+
+# dotenv files
+.env*.local
+.env*.override
+.env.secret
+
+.env
+*.pdf
+/output/*
