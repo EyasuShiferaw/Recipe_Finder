@@ -9,6 +9,12 @@ from reportlab.pdfbase import pdfmetrics
 import requests
 from io import BytesIO
 from typing import Dict, Any, Optional, List
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logeer = logging.getLogger(__name__)
+
 
 # Constants for default fonts
 DEFAULT_FONT = "Helvetica"
@@ -90,7 +96,16 @@ def generate_table(data: List[List[Any]], col_widths: List[float], styles: Table
 
 # Main function to create the PDF
 def create_recipe_pdf(recipe_data: Dict[str, Any], filename: str = "recipe.pdf"):
-    """Generates a recipe PDF using the provided recipe data."""
+
+    """
+    Generates a recipe PDF using the provided recipe data.
+    
+    Args:
+        recipe_data (dict): A dictionary containing the recipe information.
+        filename (str): path to save the pdf
+
+    """
+    logging.info(f"Generating PDF for recipe: {recipe_data['title']}")
     doc = SimpleDocTemplate(filename, pagesize=letter)
     styles = get_styles()
     elements = []
@@ -159,3 +174,4 @@ def create_recipe_pdf(recipe_data: Dict[str, Any], filename: str = "recipe.pdf")
 
     # Build PDF
     doc.build(elements)
+    logging.info(f"PDF generated: {filename}")
