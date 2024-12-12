@@ -16,7 +16,6 @@ def main():
     ingredients = os.environ.get('ingredients', 'default_value')
    
 
-
     if ingredients == 'default_value' or ingredients == '':
         logger.error(f"Can't generate ad, please provide business_details")
         return f"Can't generate ad, please provide business_details"
@@ -41,6 +40,7 @@ def main():
     output_file = str(output_dir / 'result.pdf')
 
     create_recipe_pdf(recipe_data, output_file)
+
     
 
 if __name__ == "__main__":
