@@ -96,3 +96,143 @@ extract_user_prompt = """
     </examples>
 </prompt>
 """
+
+recipe_system_prompt = """
+<?xml version="1.0" encoding="UTF-8"?>
+<culinary-persona>
+    <profile>
+        <name>Chef Maria Rodriguez</name>
+        <expertise>Home Cooking Instructor</expertise>
+    </profile>
+    <communication-style>
+        <tone>Warm and Practical</tone>
+        <key-attributes>
+            - Simplifies complex cooking steps
+            - Provides clear, actionable instructions
+            - Adds cultural context
+        </key-attributes>
+    </communication-style>
+
+    <core-philosophy>
+        Cooking should be accessible, enjoyable, and meaningful
+    </core-philosophy>
+
+    <instruction-approach>
+        <strengths>
+            - Breaks down techniques
+            - Offers practical tips
+            - Explains with empathy
+        </strengths>
+        <unique-value>
+            Transforms professional techniques into home-friendly guidance
+        </unique-value>
+    </instruction-approach>
+</culinary-persona>
+"""
+
+recipe_user_prompt = """
+<?xml version="1.0" encoding="UTF-8"?>
+<recipe-summary-generation-prompt>
+        <input-description>
+            The input will contain three components:
+            1. A summary of the recipe
+            2. List of ingredients
+            3. Original cooking instructions
+        </input-description>
+    <task-instructions>
+        Generate a refined, clear, and easy-to-follow recipe summary and cooking instructions with the following guidelines:
+        
+        Summary Refinement:
+        - Craft a concise, engaging description of the dish
+        - Highlight key flavor profiles and culinary origins
+        - Use descriptive and appetizing language
+        - If provided in the summary, include the nutrient information as well
+        
+        Ingredient Comprehensive Analysis:
+        - Critically review the provided ingredient list
+        - Identify and ADD any MISSING essential ingredients necessary for:
+            * Complete recipe preparation
+            * Proper cooking technique
+            * Enhancing flavor profile
+            * Ensuring recipe success
+        
+        Missing Ingredient Criteria:
+        - Basic pantry staples (salt, pepper, oil)
+        - Cooking liquids (water, broth, wine)
+        - Seasoning and flavor enhancers
+        - Binding or coating ingredients
+        - Garnish or finishing components
+        
+        Ingredient Presentation:
+        - Clearly distinguish between:
+            * Originally provided ingredients
+            * Newly identified MISSING ingredients
+        - Organize ingredients in logical groups
+        - Include precise measurements
+        - Note any potential substitutions
+        
+        Cooking Instructions:
+        - Rewrite instructions in clear, sequential steps
+        - Use active, imperative language
+        - Break complex steps into manageable sub-steps
+        - Include helpful cooking tips or techniques
+        - Specify cooking times, temperatures, and visual/textural cues
+    </task-instructions>
+
+    <output-format>
+        <recipe-name>String</recipe-name>
+        <summary>Concise description paragraph</summary>
+        
+        <ingredients>
+            <section name="String">
+                - Ingredient with measurement and preparation notes
+            </section>
+        </ingredients>
+        
+        <instructions>
+            <step number="Integer">Detailed, clear cooking instruction</step>
+        </instructions>
+        
+        <cooking-notes>
+            - Optional tips
+            - Potential variations
+            - Storage recommendations
+        </cooking-notes>
+    </output-format>
+
+
+    <example-output>
+        <recipe> 
+            <recipe-name>Creamy Comfort Pasta</recipe-name>
+            <summary>A luxurious pasta dish that combines rich, velvety cream sauce with perfectly cooked pasta...</summary>
+            <ingredients>
+                <section name="Original Ingredients">
+                    - Provided ingredients with original details
+                </section>
+                <section name="Additional Required Ingredients">
+                    - Newly identified missing ingredients
+                    - Reason for inclusion
+                </section>
+            </ingredients>
+            <instructions>
+                <step> 1. Bring a large pot of salted water to a rolling boil...</step>
+                <step> 2. Cook pasta until al dente, approximately 8-10 minutes...</step>
+            </instructions>
+            <cooking-notes>
+                - For a lighter version, substitute half-and-half
+                - Best served immediately
+            </cooking-notes>
+        </recipe>    
+    </example-output>
+
+    <prompt-template>
+        Given the following recipe details:
+        
+        Recipe Summary: {INSERT_SUMMARY}
+        Ingredients: {INSERT_INGREDIENTS}
+        Original Instructions: {INSERT_ORIGINAL_INSTRUCTIONS}
+
+        Please generate a comprehensive, user-friendly recipe summary and cooking instructions following the guidelines above.
+    </prompt-template>
+</recipe-summary-generation-prompt>
+"""
