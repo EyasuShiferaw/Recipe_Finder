@@ -151,7 +151,3 @@ def parse_recipe(xml_content: str) -> dict:
     }
     logging.info(f"Successfully parsed recipe from XML")
     return recipe_data
-
-
-
-    
