@@ -100,8 +100,16 @@ def xml_extract_ingredients(xml_data: str) -> str:
 
 
 
-def parse_recipe(xml_content):
-
+def parse_recipe(xml_content: str) -> dict:
+    """ Parse the recipe from the given XML content.
+    
+    Args:
+        xml_content(str): content in the xml format
+    
+    Returns:
+        str: The extracted ingredients.
+    """
+    logging.info(f"Parsing recipe from XML")
     try: 
         root = ET.fromstring(xml_content)
     except Exception as e:
@@ -141,6 +149,7 @@ def parse_recipe(xml_content):
         'instructions': instructions,
         'cooking_notes': cooking_notes
     }
+    logging.info(f"Successfully parsed recipe from XML")
     return recipe_data
 
 
