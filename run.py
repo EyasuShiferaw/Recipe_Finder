@@ -1,8 +1,8 @@
 import os
 import logging
 from pathlib import Path
-from para2pdf import generate_pdf_report
-from Recipe_Finder.recipe_finder import AdGenerator
+from para2pdf import create_recipe_pdf
+from Recipe_Finder.recipe_finder import RecipeFinder
 
 
 
@@ -13,22 +13,20 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-    business_details = os.environ.get('business_details', 'default_value')
-    keywords = os.environ.get('keywords', 'default_value')
+    ingredients = os.environ.get('ingredients', 'default_value')
+   
 
 
-    if business_details == 'default_value' or business_details == '':
+    if ingredients == 'default_value' or ingredients == '':
         logger.error(f"Can't generate ad, please provide business_details")
         return f"Can't generate ad, please provide business_details"
-    if keywords == 'default_value' or keywords == '':
-        logger.error(f"Can't generate ad, please provide keywords")
-        return f"Can't generate ad, please provide keywords"
     
-
-    ad_generator = AdGenerator(business_details, keywords)
-    ad = ad_generator()
     
-    if ad is None:
+    recipe = RecipeFinder(ingredients)
+    recipe_data = recipe()
+    
+    
+    if recipe_data is None:
         logger.error(f"Can't generate ad")
         ad = f"Can't generate ad"
     
@@ -40,9 +38,9 @@ def main():
     output_dir.mkdir(exist_ok=True)  # Create 'output' directory if it doesn't exist
 
     # Define the file path within the 'output' directory
-    output_file = output_dir / 'result.pdf'
+    output_file = str(output_dir / 'result.pdf')
 
-    generate_pdf_report(ad, output_file)
+    create_recipe_pdf(recipe_data, output_file)
     
 
 if __name__ == "__main__":
