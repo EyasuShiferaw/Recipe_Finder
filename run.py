@@ -2,7 +2,7 @@ import os
 import logging
 from pathlib import Path
 from para2pdf import create_recipe_pdf
-from Recipe_Finder.recipe_finder import RecipeFinder
+from recipe_finder import RecipeFinder
 
 
 
