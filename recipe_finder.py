@@ -47,8 +47,6 @@ class RecipeFinder:
         return self.recipe_data      
        
 
-        print(self.recipe_data, self.temp)
-
 
     @lru_cache(maxsize=1000)
     def construct_messages(self, user_prompt: str, system_prompt: str) -> list[dict]:
@@ -220,8 +218,8 @@ class RecipeFinder:
     
 
 
-test = " Items I have include chicken breast, tomatoes, spinach, garlic, pasta, and Parmesan cheese"
-test_recipe = RecipeFinder(test)
+# test = " Items I have include chicken breast, tomatoes, spinach, garlic, pasta, and Parmesan cheese"
+# test_recipe = RecipeFinder(test)
 
-print(test_recipe(), test_recipe.recipe_data, (test_recipe.recipe_data).keys())
+# print(test_recipe(), test_recipe.recipe_data, (test_recipe.recipe_data).keys())
 
