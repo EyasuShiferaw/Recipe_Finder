@@ -100,77 +100,49 @@ def xml_extract_ingredients(xml_data: str) -> str:
 
 
 
-def parse_xml(xml_string: str) -> list[dict]:
-    """ Parse the XML string into a list of dictionaries.
-    
-    Args:
-        xml_string (str): The XML string to parse.
-    
-    Returns:
-        list[dict]: A list of dictionaries, where each dictionary contains the following keys:
-            - StrategyName: The name of the strategy.
-            - Headlines: A list of headlines.
-            - Description: The description of the strategy.
-            - Explanation: The explanation of the strategy. 
-    """
-   
-    ad_concepts = []
+def parse_recipe(xml_content):
 
-    try:
-        tree = ET.fromstring(xml_string)
+    try: 
+        root = ET.fromstring(xml_content)
     except Exception as e:
-        logger.error(f"Error parsing XML string.\nException: {e}")
-        raise
-    else:  
-        for concept_element in tree.findall('Concept'):
-            concept_data = {}
-            concept_data['StrategyName'] = concept_element.find('StrategyName').text
-            concept_data['Headlines'] = [headline.text for headline in concept_element.find('Headlines').findall('Headline')]
-            concept_data['Description'] = concept_element.find('Description').text
-            concept_data['Explanation'] = concept_element.find('Explanation').text
-            ad_concepts.append(concept_data)
+        start_tag = "<recipe>"
+        end_tag = "</recipe>"
+        xml_string = get_xml_data(xml_content, start_tag, end_tag)
+        # Parse the XML content
+        root = ET.fromstring(xml_string)
 
-    return ad_concepts
+    # Extract summary
+    summary = root.find('summary').text.strip()
 
-def pipeline_for_xml_parse(xml_data: str) -> list[dict]:
-    """ A pipeline for parsing XML data.
-
-    Args:
-        xml_data (str): The XML data to parse.
+    # Extract ingredients
+    ingredients = {
+        'Original Ingredients': [],
+        'Additional Required Ingredients': []
+    }
     
-    Returns:
-        list[dict]: A list of dictionaries, where each dictionary contains the following keys:
-            - StrategyName: The name of the strategy.
-            - Headlines: A list of headlines.
-            - Description: The description of the strategy.
-            - Explanation: The explanation of the strategy.
-    """
-    logger.info(f"Parsing XML string")  
-    ad_concepts = []
-    try:
-        cleaned_xml_data = get_xml_data(xml_data)
-        ad_concepts = parse_xml(cleaned_xml_data)
-    except Exception as e:
-        logger.error(f"Error in pipeline for XML parse.\nException: {e}")
-        raise
-    else:
-        logger.info(f"Successfully parsed XML data")
-        return ad_concepts
+    for section in root.find('ingredients'):
+        section_name = section.attrib['name']
+        items = section.text.strip().split('\n')
+        ingredients[section_name] = [item.strip('- ').strip() for item in items if item.strip()]
+
+    # Extract instructions
+    instructions = []
+    for step in root.find('instructions'):
+        instructions.append(step.text.strip())
+
+    # Extract cooking notes
+    cooking_notes = root.find('cooking-notes').text.strip().split('\n')
+    cooking_notes = [note.strip('- ').strip() for note in cooking_notes if note.strip()]
+
+    # Construct result
+    recipe_data = {
+        'summary': summary,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'cooking_notes': cooking_notes
+    }
+    return recipe_data
 
 
-# test = """
-# <?xml version="1.0" encoding="UTF-8"?>
-# <ingredient_extraction>
-#     <ingredients>
-#         <ingredient>Chicken Breast</ingredient>
-#         <ingredient>Tomatoes</ingredient>
-#         <ingredient>Spinach</ingredient>
-#         <ingredient>Garlic</ingredient>
-#         <ingredient>Pasta</ingredient>
-#         <ingredient>Parmesan Cheese</ingredient>
-#     </ingredients>
-# </ingredient_extraction>
-# """
-# print(xml_extract_ingredients(test))
 
     
