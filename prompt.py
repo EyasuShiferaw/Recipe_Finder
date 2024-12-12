@@ -155,14 +155,7 @@ recipe_user_prompt = """
             * Proper cooking technique
             * Enhancing flavor profile
             * Ensuring recipe success
-        
-        Missing Ingredient Criteria:
-        - Basic pantry staples (salt, pepper, oil)
-        - Cooking liquids (water, broth, wine)
-        - Seasoning and flavor enhancers
-        - Binding or coating ingredients
-        - Garnish or finishing components
-        
+
         Ingredient Presentation:
         - Clearly distinguish between:
             * Originally provided ingredients
@@ -211,7 +204,6 @@ recipe_user_prompt = """
                 </section>
                 <section name="Additional Required Ingredients">
                     - Newly identified missing ingredients
-                    - Reason for inclusion
                 </section>
             </ingredients>
             <instructions>
