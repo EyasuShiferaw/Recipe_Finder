@@ -3,8 +3,8 @@ import logging
 import requests
 from dotenv import load_dotenv
 from functools import lru_cache
-from prompt import extract_user_prompt, extract_system_prompt
-from utility import get_completion, xml_extract_ingredients
+from prompt import extract_user_prompt, extract_system_prompt, recipe_user_prompt, recipe_system_prompt
+from utility import get_completion, xml_extract_ingredients, parse_recipe
 
 load_dotenv()
 
@@ -17,19 +17,37 @@ RECIPE_API = os.environ.get("spoonacular_API")
 class RecipeFinder:
     def __init__(self,user_query: str):
        self.user_query = user_query
+       self.diet = None
+       self.title = None
+       self.image = None
+       self.recipe_data = None
        self.ingredients = None
        self.recipe_id = None
-      
+       self.nutrients = None
 
+       
+      
+    @lru_cache(maxsize=1000)
     def __call__(self):
         self.extract_ingredients()
         self.recipe = self.extract_recipe()
         self.recipe_id = self.recipe[0]["id"]
+        self.title = self.recipe[0]["title"]
+        self.image = self.recipe[0]["image"]
         self.recipe_info = self.extract_recipe_info()
-        self.instructions = self.extract_recipe_instructions() 
+        self.summary = self.recipe_info["summary"]
+        self.instructions = self.recipe_info["instructions"]
+        self.ingredient_info = self.ingredients_info(self.recipe)
+        self.nutrients = self.extract_recipe_nutrients(self.recipe_info) 
+        self.diet= self.diet_info(self.recipe_info)
+        self.temp = self.full_instruction( self.summary, self.ingredient_info, self.instructions)
+        self.recipe_data = parse_recipe(self.temp)
 
-    def __str__(self):
-        return f"AdGenerator(business_details={self.business_details}, keywords={self.keywords})"
+        self.enrich_recipe()
+        return self.recipe_data      
+       
+
+        print(self.recipe_data, self.temp)
 
 
     @lru_cache(maxsize=1000)
@@ -47,11 +65,12 @@ class RecipeFinder:
         logger.info(f"constructing messages")
         messages = [
             {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt}
             ]
         logger.info(f"Finished constructing messages")
         return messages
     
+   
     def extract_ingredients(self) -> str:
         """
         Extract the ingredients from the user query.
@@ -71,9 +90,12 @@ class RecipeFinder:
             return None
         else:
             logger.info("successfully extracted ingredients")
-        
+
     
     def extract_recipe(self) -> str:
+        """Extract the recipe f.
+        Returns:
+            str: The extracted recipe."""
         
         logger.info(f"extracting recipe")
         if self.ingredients is None:
@@ -92,13 +114,12 @@ class RecipeFinder:
      }
         response = requests.get(url, params=params)
         if response.status_code == 200:
-            print(response.json())
             return response.json()
         else:
             print(f"Failed to fetch analyzed instructions: {response.status_code}, {response.text}")
             return None
-        
-    def extract_recipe_info(self) -> str:
+      
+    def extract_recipe_info(self) -> list[dict]:
         logger. info(f"extracting recipe info")
         base_url = "https://api.spoonacular.com/recipes/{id}/information"
         if self.recipe_id is None:
@@ -114,65 +135,93 @@ class RecipeFinder:
      }
         response = requests.get(url, params=params)
         if response.status_code == 200:
-            print(response.json())
             return response.json()
         else:
             print(f"Failed to fetch information: {response.status_code}, {response.text}")
             return None
     
 
-    def extract_recipe_instructions(self) -> str:
+    def extract_recipe_nutrients(self, info:dict) -> list[dict]:
 
         logger. info(f"extracting recipe instructions")
-        base_url = "https://api.spoonacular.com/recipes/{id}/analyzedInstructions"
-        if self.recipe_id is None:
-            logger.error("can't extract recipe instructions")
-            return None
-        
-        url = base_url.replace("{id}", str(self.recipe_id))
 
-        params = {
-        "apiKey": RECIPE_API
-     }
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-            print(response.json())
-            return response.json()
+        try:
+            return  info["nutrition"]["nutrients"]
+        except:
+            return None
+
+        
+    def ingredients_info(self, recipe:str):
+
+        usedIngredients = [i["original"] for i in recipe[0]["usedIngredients"]]
+        missedIngredients = [i["original"] for i in recipe[0]["missedIngredients"]]
+        unusedIngredients = [i["name"] for i in recipe[0]["unusedIngredients"]]
+        
+        return {"unusedIngredients": unusedIngredients,"usedIngredients": usedIngredients,"missedIngredients": missedIngredients} 
+
+    def diet_info(self, recipe_data: dict):
+                # Organize Diet Info
+        diet_info = {
+            "Dietary Suitability": {
+                "Vegetarian": "Yes" if recipe_data['vegetarian'] else "No",
+                "Vegan": "Yes" if recipe_data['vegan'] else "No",
+                "Gluten-Free": "Yes" if recipe_data['glutenFree'] else "No",
+                "Dairy-Free": "Yes" if recipe_data['dairyFree'] else "No",
+                "Low FODMAP": "Yes" if recipe_data['lowFodmap'] else "No",
+                "GAPS Diet": "Yes" if recipe_data['gaps'].lower() == 'yes' else "No"
+            },
+            "Health Metrics": {
+                "Weight Watcher Smart Points": recipe_data['weightWatcherSmartPoints'],
+                "Health Score": recipe_data['healthScore']
+            },
+            "Additional Notes": {
+                "Very Healthy": "Yes" if recipe_data['veryHealthy'] else "No",
+                "Sustainable": "Yes" if recipe_data['sustainable'] else "No"
+            }
+        }
+        return diet_info
+
+    def full_instruction(self, summary, ingredient, instruction):
+        
+        logger.info(f"generating full instruction")
+        user_prompt = recipe_user_prompt.format(INSERT_SUMMARY=summary, INSERT_INGREDIENTS=ingredient["usedIngredients"], INSERT_ORIGINAL_INSTRUCTIONS=instruction)
+        messages = self.construct_messages(recipe_system_prompt, user_prompt)
+       
+        
+        try:
+            response = get_completion(messages)
+        except:
+            logger.error("Can't generate full instruction")
+            return None
         else:
-            print(f"Failed to fetch analyzed instructions: {response.status_code}, {response.text}")
-            return None
-
-    
-    # def extract_instructions(self) -> str:
-    #     pass
-    
-    # def extract_nutrition_info(self) -> str:
-    #     pass
-    
-    # def generate_ad(self) -> str:
-    #     """
-    #     Generate a cover letter based on the provided job description and resume.
-    #     Args:
-    #         messages (list[dict]): The messages.
+            logger.info("successfully generated full instruction")
+            print(response)
+            return response
         
-    #     Returns:
-    #         str: The generated ad.
-    #     """ 
-    #     messages = self.construct_messages()
-    #     if not isinstance(messages, list):
-    #         logger.error("Can't construct messages")
-    #         return None
-     
-    #     try:
-    #         self.ad = get_completion(messages)
-    #     except Exception as e:
-    #         logger.error(f"Can't generate ad\nException: {e}")
-    #         return None
-    #     else:
-    #         logger.info("successfully generated ad")
-    #     return self.ad
+    def enrich_recipe(self) -> dict:
+        """Enrich the parsed recipe data with additional details.
+    
+        
+        Returns:
+            dict: The enriched recipe dictionary.
+        """
+        try:
+           
+            self.recipe_data.update({
+                "title": self.title,
+                "image": self.image,
+                "diet": self.diet,
+                "nutrients": self.nutrients,
+            })
+            logger.info("Recipe successfully enriched with additional details.")
+        except Exception as e:
+            logger.error(f"Error enriching recipe data.\nException: {e}")
+            raise
+    
 
 
 test = " Items I have include chicken breast, tomatoes, spinach, garlic, pasta, and Parmesan cheese"
 test_recipe = RecipeFinder(test)
-test_recipe()
+
+print(test_recipe(), test_recipe.recipe_data, (test_recipe.recipe_data).keys())
+
