@@ -2,7 +2,7 @@ import os
 import logging
 from pathlib import Path
 from para2pdf import generate_pdf_report
-from ad_generator import AdGenerator
+from Recipe_Finder.recipe_finder import AdGenerator
 
 
 
