@@ -14,11 +14,10 @@ logger = logging.getLogger(__name__)
 def main():
 
     ingredients = os.environ.get('ingredients', 'default_value')
-   
 
     if ingredients == 'default_value' or ingredients == '':
-        logger.error(f"Can't generate ad, please provide business_details")
-        return f"Can't generate ad, please provide business_details"
+        logger.error(f"Can't generate recipe, please provide ingredients")
+        return f"Can't generate recipe, please provide ingredients"
     
     
     recipe = RecipeFinder(ingredients)
@@ -26,8 +25,8 @@ def main():
     
     
     if recipe_data is None:
-        logger.error(f"Can't generate ad")
-        ad = f"Can't generate ad"
+        logger.error(f"Can't generate recipe")
+        ad = f"Can't generate recipe"
     
    # Get the directory of the current script (run.py)
     script_dir = Path(__file__).parent
