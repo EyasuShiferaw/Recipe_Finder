@@ -39,6 +39,7 @@ class RecipeFinder:
     def __call__(self) -> Optional[Dict[str, Any]]:
         self.extract_ingredients()
         recipe = self.extract_recipe()
+        print(recipe)
         if not recipe:
             logger.error("No recipe found.")
             return None
@@ -63,6 +64,7 @@ class RecipeFinder:
         )
 
         self.enrich_recipe()
+
         return self.recipe_data
 
     @lru_cache(maxsize=1000)
@@ -114,7 +116,7 @@ class RecipeFinder:
 
         ingredients = xml_extract_ingredients(self.ingredients)
         url = "https://api.spoonacular.com/recipes/findByIngredients"
-        params = {"apiKey": RECIPE_API, "ingredients": ingredients, "number": 1}
+        params = {"apiKey": RECIPE_API,"ingredients": ingredients,"ranking": 1, "number": 1}
 
         try:
             response = requests.get(url, params=params)

@@ -1,9 +1,9 @@
 import os
-import re
 import logging
 import aisuite as ai
 from dotenv import load_dotenv
-from functools import lru_cache
+
+from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -101,46 +101,53 @@ def xml_extract_ingredients(xml_data: str) -> str:
 
 
 def parse_recipe(xml_content: str) -> dict:
-    """ Parse the recipe from the given XML content.
+    """ Parse the recipe from the given XML content using BeautifulSoup.
     
     Args:
         xml_content(str): content in the xml format
     
     Returns:
-        str: The extracted ingredients.
+        dict: The extracted recipe data.
     """
     logging.info(f"Parsing recipe from XML")
+  
     try: 
-        root = ET.fromstring(xml_content)
+        # Parse the XML content with BeautifulSoup
+        soup = BeautifulSoup(xml_content, 'xml')
     except Exception as e:
-        start_tag = "<recipe>"
-        end_tag = "</recipe>"
-        xml_string = get_xml_data(xml_content, start_tag, end_tag)
-        # Parse the XML content
-        root = ET.fromstring(xml_string)
+        logger.error(f"Error parsing XML content with BeautifulSoup.\nException: {e}")
+        return {}
 
     # Extract summary
-    summary = root.find('summary').text.strip()
+    summary = soup.find('summary').text.strip() if soup.find('summary') else 'No summary provided'
 
     # Extract ingredients
-    ingredients = {
-        'Original Ingredients': [],
-        'Additional Required Ingredients': []
-    }
+    ingredients = {}
     
-    for section in root.find('ingredients'):
-        section_name = section.attrib['name']
-        items = section.text.strip().split('\n')
-        ingredients[section_name] = [item.strip('- ').strip() for item in items if item.strip()]
+    for section in soup.find_all('section'):
+        section_name = section.get('name', 'Unnamed Section')
+        ingredients[section_name] = []
+        
+        for ingredient in section.find_all('ingredient'):
+            name = ingredient.find('name').text.strip() if ingredient.find('name') else "Unknown"
+            quantity = ingredient.find('quantity').text.strip() if ingredient.find('quantity') else "Unknown"
+            notes = ingredient.find('notes').text.strip() if ingredient.find('notes') else ""
+            
+            ingredients[section_name].append(f"{quantity} {name}, {notes}")
 
     # Extract instructions
     instructions = []
-    for step in root.find('instructions'):
-        instructions.append(step.text.strip())
+    for step in soup.find_all('step'):
+        instruction_text = step.find('instruction').text.strip() if step.find('instruction') else ''
+        if instruction_text:
+            instructions.append(instruction_text)
 
     # Extract cooking notes
-    cooking_notes = root.find('cooking-notes').text.strip().split('\n')
-    cooking_notes = [note.strip('- ').strip() for note in cooking_notes if note.strip()]
+    cooking_notes = []
+    for note in soup.find_all('note'):
+        note_text = note.text.strip() if note.text else ''
+        if note_text:
+            cooking_notes.append(note_text)
 
     # Construct result
     recipe_data = {
@@ -149,5 +156,6 @@ def parse_recipe(xml_content: str) -> dict:
         'instructions': instructions,
         'cooking_notes': cooking_notes
     }
+
     logging.info(f"Successfully parsed recipe from XML")
     return recipe_data

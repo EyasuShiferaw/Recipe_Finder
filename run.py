@@ -22,12 +22,12 @@ def main():
     
     recipe = RecipeFinder(ingredients)
     recipe_data = recipe()
-    
+    print(recipe_data)
+
     
     if recipe_data is None:
         logger.error(f"Can't generate recipe")
-        ad = f"Can't generate recipe"
-    
+       
    # Get the directory of the current script (run.py)
     script_dir = Path(__file__).parent
 
