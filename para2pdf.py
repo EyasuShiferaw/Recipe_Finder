@@ -241,7 +241,7 @@ def create_recipe_pdf(recipe_data: Dict[str, Any], output_filename: str ):
     
     # Title and Summary
     elements.append(Paragraph(recipe_data['title'], styles["title"]))
-    elements.append(Paragraph(recipe_data.get('summary', ''), styles["subtitle"]))
+    elements.append(Paragraph(recipe_data.get('summary', ''), styles["body"]))
     elements.append(Spacer(1, 12))
     
     # Ingredients Section
