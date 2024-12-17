@@ -116,7 +116,7 @@ class RecipeFinder:
 
         ingredients = xml_extract_ingredients(self.ingredients)
         url = "https://api.spoonacular.com/recipes/findByIngredients"
-        params = {"apiKey": RECIPE_API,"ingredients": ingredients,"ranking": 1, "number": 1}
+        params = {"apiKey": RECIPE_API,"ingredients": ingredients, "ranking": 1, "number": 1}
 
         try:
             response = requests.get(url, params=params)
