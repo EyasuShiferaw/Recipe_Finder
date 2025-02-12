@@ -39,7 +39,6 @@ class RecipeFinder:
     def __call__(self) -> Optional[Dict[str, Any]]:
         self.extract_ingredients()
         recipe = self.extract_recipe()
-        print(recipe)
         if not recipe:
             logger.error("No recipe found.")
             return None
