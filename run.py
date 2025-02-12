@@ -13,27 +13,37 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-    ingredients = os.environ.get('ingredients', 'default_value')
-
-    if ingredients == 'default_value' or ingredients == '':
-        logger.error(f"Can't generate recipe, please provide ingredients")
-        return f"Can't generate recipe, please provide ingredients"
-    
-    
-    recipe = RecipeFinder(ingredients)
-    recipe_data = recipe()
-    print(recipe_data)
-
-    
-    if recipe_data is None:
-        logger.error(f"Can't generate recipe")
-       
-   # Get the directory of the current script (run.py)
+    # Get the directory of the current script (run.py)
     script_dir = Path(__file__).parent
 
     # Define the path for the 'output' folder inside the script's directory
     output_dir = script_dir / 'output'
-    output_dir.mkdir(exist_ok=True)  # Create 'output' directory if it doesn't exist
+    output_dir.mkdir(exist_ok=True)
+
+    ingredients = os.environ.get('ingredients', 'default_value')
+   
+
+    if ingredients == 'default_value' or ingredients == '':
+        logger.error(f"Can't generate recipe, please provide ingredients")
+        output_file = str(output_dir / 'result.txt')
+        with open(output_file, 'w') as f:
+            f.write("Can't generate recipe, please provide ingredients")
+        return None
+        
+    
+    
+    recipe = RecipeFinder(ingredients)
+    recipe_data = recipe()
+    
+    if recipe_data is None:
+        logger.error(f"Can't generate recipe, please provide ingredients")
+        output_file = str(output_dir / 'result.txt')
+        with open(output_file, 'w') as f:
+            f.write("Can't generate recipe, please provide ingredients")
+        return None
+
+       
+   # Create 'output' directory if it doesn't exist
 
     # Define the file path within the 'output' directory
     output_file = str(output_dir / 'result.pdf')
