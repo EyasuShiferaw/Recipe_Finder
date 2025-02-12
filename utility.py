@@ -69,7 +69,8 @@ def get_xml_data(xml_data: str, start_tag: str, end_tag: str) -> str:
         xml_string = xml_data[start_index:end_index]
     except Exception as e:
         logger.error(f"Error cleaning XML data.\nException: {e}")
-        raise
+        return None
+        
     else:
         logger.info(f"Successfully cleaned XML data")
         return xml_string    
